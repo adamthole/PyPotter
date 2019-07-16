@@ -13,7 +13,7 @@
     <Name>PyPotter</Name>
     <RootNamespace>PythonApplication1</RootNamespace>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>http://192.168.1.106:8080/?action=stream https://garmadon.duckdns.org:8123 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1NTI4MjYwMjAsImlzcyI6ImE0NjBiNzRlNzc1ZDRmNWI5OGE2YWJhMjc4YjA0ZWZiIiwiZXhwIjoxODY4MTg2MDIwfQ.vkaOt1dap_9H5w3SZEL1HQoh5VxuPk2eaLThytZjYTI</CommandLineArguments>
+    <CommandLineArguments></CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
