@@ -49,12 +49,16 @@ if (len(sys.argv) >= 7):
 hass = HassApi(hassUrl, hassRestToken)
 
 # Constants
+DesiredFps = 42
+DefaultFps = 42 # Original constants trained for 42 FPS
+
 TrainingResolution = 50
 TrainingNumPixels = TrainingResolution * TrainingResolution
 TrainingFolderName = "Training"
 SpellEndMovement = 0.5
-MinSpellLength = 15
+MinSpellLength = 15 * (DesiredFps / DefaultFps)
 MinSpellDistance = 100
+NumDistancesToAverage = int(round( 20 * (DesiredFps / DefaultFps)))
 
 # Booleans to turn on or off output windows
 IsShowOriginal = False
@@ -228,7 +232,7 @@ def CheckForPattern(wandTracks, exampleFrame):
         cv2.line(wand_path_frame, (x1, y1),(x2, y2), (255,255,255), thickness)
         prevTrack = track
 
-    mostRecentDistances = distances[-20:]
+    mostRecentDistances = distances[-NumDistancesToAverage:]
     avgMostRecentDistances = mean(mostRecentDistances)
     sumDistances = sum(distances)
 
