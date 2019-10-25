@@ -15,6 +15,7 @@ import os
 from os import listdir
 from os.path import isfile, join, isdir
 import time
+import datetime
 import threading
 from threading import Thread
 from statistics import mean 
@@ -35,6 +36,7 @@ hassRestToken = sys.argv[3]
 IsRemoveBackground = True
 IsShowOutputWindows = True
 IsTraining = False
+IsDebugFps = False
 
 if (len(sys.argv) >= 5):
     IsRemoveBackground = sys.argv[4] == "True"
@@ -45,17 +47,21 @@ if (len(sys.argv) >= 6):
 if (len(sys.argv) >= 7):
     IsTraining = sys.argv[6] == "True"
 
+if (len(sys.argv) >= 8):
+    IsDebugFps = sys.argv[7] == "True"
+
 # Initialize Home Assistant Rest API Wrapper
 hass = HassApi(hassUrl, hassRestToken)
 
 # Constants
 DesiredFps = 42
 DefaultFps = 42 # Original constants trained for 42 FPS
+MicroSecondsBetweenFrames = (1 / DesiredFps) * 1000000
 
 TrainingResolution = 50
 TrainingNumPixels = TrainingResolution * TrainingResolution
 TrainingFolderName = "Training"
-SpellEndMovement = 0.5
+SpellEndMovement = 1.5
 MinSpellLength = 15 * (DesiredFps / DefaultFps)
 MinSpellDistance = 100
 NumDistancesToAverage = int(round( 20 * (DesiredFps / DefaultFps)))
@@ -318,14 +324,19 @@ def ProcessData():
     """
     Thread for processing final frame
     """
-    global frameThresh, IsNewFrameThreshold, findNewWands, wandTracks
+    global frameThresh, IsNewFrameThreshold, findNewWands, wandTracks, timesBetweenOutputFrames
 
     oldFrameThresh = None
     trackedPoints = None
     t = threading.currentThread()
-    
+    timeLastOutputFrame = datetime.datetime.now()
+
     while getattr(t, "do_run", True):
         if (IsNewFrameThreshold):
+            if (IsDebugFps):
+                timesBetweenOutputFrames.append((datetime.datetime.now() - timeLastOutputFrame).microseconds);
+                timeLastOutputFrame = datetime.datetime.now();
+
             IsNewFrameThreshold = False
             localFrameThresh = frameThresh.copy()
 
@@ -376,6 +387,12 @@ def AddIterationsPerSecText(frame, iterations_per_sec):
         (10, 450), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255))
     return frame
 
+timeLastInputFrame = datetime.datetime.now()
+timeLastPrintedFps = datetime.datetime.now()
+
+timesBetweenInputFrames = []
+timesBetweenOutputFrames = []
+
 # Initialize and traing the spell classification algorithm
 InitClassificationAlgo()
 
@@ -406,11 +423,29 @@ while True:
     # Get most recent frame
     ret, localFrame = videoCapture.read()
 
-    if (ret):
+    elapsed = (datetime.datetime.now() - timeLastInputFrame).microseconds
+
+    if (ret and (elapsed > MicroSecondsBetweenFrames)):
         frame = localFrame.copy()
         # If successful, flip the frame and set the Flag for the next process to take over
         cv2.flip(frame, 1, frame) # Flipping the frame is done so the spells look like what we expect, instead of the mirror image
         IsNewFrame = True
+
+        if (IsDebugFps):
+            timeLastInputFrame = datetime.datetime.now()
+            timesBetweenInputFrames.append(elapsed)
+            
+            # Print FPS Debug info every second
+            if ((datetime.datetime.now() - timeLastPrintedFps).seconds >= 1):
+                timesBetweenInputFrames = timesBetweenInputFrames[-30:]
+                avgInputFps = 1 / ( mean(timesBetweenInputFrames) / 1000000)
+
+                timesBetweenOutputFrames = timesBetweenOutputFrames[-30:]
+                avgOutputFps = 1 / ( mean(timesBetweenOutputFrames) / 1000000)
+                print("Avg FPS: %.2f / %.2f" %(avgInputFps, avgOutputFps) )
+
+                timeLastPrintedFps = datetime.datetime.now()
+                    
 
         # Update Windows
         if (IsShowOriginal):
