@@ -282,9 +282,11 @@ def RemoveBackground():
         if (IsNewFrame):
             IsNewFrame = False
 
+            frameCopy = frame.copy()
+
             # Subtract Background
-            fgmask = fgbg.apply(frame, learningRate=0.001)
-            frame_no_background = cv2.bitwise_and(frame, frame, mask = fgmask)
+            fgmask = fgbg.apply(frameCopy, learningRate=0.001)
+            frame_no_background = cv2.bitwise_and(frameCopy, frameCopy, mask = fgmask)
             IsNewFrameNoBackground = True
 
             if (IsShowBackgroundRemoved):
