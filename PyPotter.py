@@ -425,9 +425,9 @@ while True:
     # Get most recent frame
     ret, localFrame = videoCapture.read()
 
-    elapsed = (datetime.datetime.now() - timeLastInputFrame).microseconds
+    if (ret):
+        elapsed = (datetime.datetime.now() - timeLastInputFrame).microseconds
 
-    if (ret and (elapsed > MicroSecondsBetweenFrames)):
         frame = localFrame.copy()
         # If successful, flip the frame and set the Flag for the next process to take over
         cv2.flip(frame, 1, frame) # Flipping the frame is done so the spells look like what we expect, instead of the mirror image
