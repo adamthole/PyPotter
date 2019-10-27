@@ -326,18 +326,16 @@ def ProcessData():
     """
     Thread for processing final frame
     """
-    global frameThresh, IsNewFrameThreshold, findNewWands, wandTracks, timesBetweenOutputFrames
+    global frameThresh, IsNewFrameThreshold, findNewWands, wandTracks, outputFrameCount
 
     oldFrameThresh = None
     trackedPoints = None
     t = threading.currentThread()
-    timeLastOutputFrame = datetime.datetime.now()
 
     while getattr(t, "do_run", True):
         if (IsNewFrameThreshold):
             if (IsDebugFps):
-                timesBetweenOutputFrames.append((datetime.datetime.now() - timeLastOutputFrame).microseconds);
-                timeLastOutputFrame = datetime.datetime.now();
+                outputFrameCount = outputFrameCount + 1
 
             IsNewFrameThreshold = False
             localFrameThresh = frameThresh.copy()
@@ -389,11 +387,10 @@ def AddIterationsPerSecText(frame, iterations_per_sec):
         (10, 450), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255))
     return frame
 
-timeLastInputFrame = datetime.datetime.now()
 timeLastPrintedFps = datetime.datetime.now()
 
-timesBetweenInputFrames = []
-timesBetweenOutputFrames = []
+inputFrameCount = 0
+outputFrameCount = 0
 
 # Initialize and traing the spell classification algorithm
 InitClassificationAlgo()
@@ -426,27 +423,21 @@ while True:
     ret, localFrame = videoCapture.read()
 
     if (ret):
-        elapsed = (datetime.datetime.now() - timeLastInputFrame).microseconds
-
         frame = localFrame.copy()
+
         # If successful, flip the frame and set the Flag for the next process to take over
         cv2.flip(frame, 1, frame) # Flipping the frame is done so the spells look like what we expect, instead of the mirror image
         IsNewFrame = True
 
         if (IsDebugFps):
-            timeLastInputFrame = datetime.datetime.now()
-            timesBetweenInputFrames.append(elapsed)
+            inputFrameCount = inputFrameCount + 1
             
             # Print FPS Debug info every second
-            if ((datetime.datetime.now() - timeLastPrintedFps).seconds >= 1):
-                timesBetweenInputFrames = timesBetweenInputFrames[-30:]
-                avgInputFps = 1 / ( mean(timesBetweenInputFrames) / 1000000)
-
-                timesBetweenOutputFrames = timesBetweenOutputFrames[-30:]
-                avgOutputFps = 1 / ( mean(timesBetweenOutputFrames) / 1000000)
-                print("Avg FPS: %.2f / %.2f" %(avgInputFps, avgOutputFps) )
-
+            if ((datetime.datetime.now() - timeLastPrintedFps).seconds >= 1 ):
                 timeLastPrintedFps = datetime.datetime.now()
+                print("FPS: %d/%d" %(inputFrameCount, outputFrameCount))
+                inputFrameCount = 0
+                outputFrameCount = 0
                     
 
         # Update Windows
