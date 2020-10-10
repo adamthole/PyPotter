@@ -1,0 +1,136 @@
+automation:
+  - alias: wand_aguamenti
+    trigger:
+    action:
+      - service: light.turn_on
+        data:
+          entity_id: light.office
+          color_name: white
+      - service: light.turn_on
+        data:
+          entity_id: light.office
+          color_name: blue
+      - service: timer.start
+        entity_id: timer.reset_lights
+
+  - alias: wand_revelio
+    trigger:
+    action:
+      - service: light.turn_off
+        entity_id: light.office
+      - service: timer.start
+        data:
+          entity_id: timer.reset_lights
+
+  - alias: wand_tarantallegra
+    trigger:
+    action:
+#      - service: switch.turn_on
+#        entity_id: switch.coffee_roaster_switch
+      - service: light.turn_on
+        data:
+          entity_id: light.office
+          color_name: white
+      - service: light.turn_on
+        data:
+          entity_id: light.office
+          color_name: orange
+#      - service: timer.start
+#        entity_id: timer.turn_off_popcorn
+
+  - alias: wand_incendio
+    trigger:
+    action:
+      - service: light.turn_on
+        data:
+          entity_id: light.office
+          color_name: white
+      - service: light.turn_on
+        data:
+          entity_id: light.office
+          color_name: red
+      - service: timer.start
+        data:
+          entity_id: timer.reset_lights
+
+  - alias: wand_specialis_revelio
+    trigger:
+    action:
+      - service: light.turn_on
+        data:
+          entity_id: light.office
+          color_name: white
+      - service: light.turn_on
+        data:
+          entity_id: light.office
+          color_name: purple
+      - service: timer.start
+        data:
+          entity_id: timer.reset_lights
+
+  - alias: wand_alohomora
+    trigger:
+    action:
+      - service: light.turn_on
+        data:
+          entity_id: light.office
+          color_name: white
+      - service: light.turn_on
+        data:
+          entity_id: light.office
+          color_name: green
+      - service: timer.start
+        entity_id: timer.reset_lights
+
+  - alias: wand_silencio
+    trigger:
+    action:
+#      - service: switch.turn_off
+#        entity_id: switch.windrunner_switch
+#      - service: switch.turn_off
+#        entity_id: switch.coffee_roaster_switch
+      - service: light.turn_on
+        data:
+          entity_id: light.office
+          kelvin: 2700
+
+  - alias: Reset Lights After Spell Light Timer
+    initial_state: on
+    trigger:
+      platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.reset_lights
+    action:
+      - service: light.turn_on
+        data:
+          entity_id: light.office
+          kelvin: 2700
+
+#  - alias: Timer Water Action
+#    trigger:
+#      platform: event
+#      event_type: timer.finished
+#      event_data:
+#        entity_id: timer.turn_off_water
+#    action:
+#      - service: switch.turn_off
+#        entity_id: switch.windrunner_switch
+#
+#  - alias: Timer Popcorn Action
+#    trigger:
+#      platform: event
+#      event_type: timer.finished
+#      event_data:
+#        entity_id: timer.turn_off_popcorn
+#    action:
+#      - service: switch.turn_off
+#        entity_id: switch.coffee_roaster_switch
+
+timer:
+  reset_lights:
+    duration: '00:00:15'
+#  turn_off_water:
+#    duration: '00:00:15'
+#  turn_off_popcorn:
+#    duration: '00:00:30'
